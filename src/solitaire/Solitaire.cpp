@@ -58,20 +58,23 @@ void Solitaire::render_held()
 /* renders the top 3 shown cards in the draw pile, and the remaining hidden draw pile */
 void Solitaire::render_draw_pile()
 {
-    SDL_Rect shown = shown_draw_pile;
-    int rshown = std::min(nshown, SHOW_AMT);
-    auto head = draw_pile.back_ptr();
-
-    for (int i=0; i<=rshown; i++)
+    if (!draw_pile.empty()) 
     {
-        auto card = draw_pile.back();
-        draw_pile.advance();
-        if (i<rshown) {
-            render_card(card, &shown);
-            shown.y += 50;
-        } else if (nhidden > 0) render_card(card, &hidden_draw_pile);
+        SDL_Rect shown = shown_draw_pile;
+        int rshown = std::min(nshown, SHOW_AMT);
+        auto head = draw_pile.back_ptr();
+
+        for (int i=0; i<=rshown; i++)
+        {
+            auto card = draw_pile.back();
+            draw_pile.advance();
+            if (i<rshown) {
+                render_card(card, &shown);
+                shown.y += 50;
+            } else if (nhidden > 0) render_card(card, &hidden_draw_pile);
+        }
+        draw_pile.setCursor(head);
     }
-    draw_pile.setCursor(head);
 }
 
 /* renders all of the suit stacks */
@@ -84,7 +87,7 @@ void Solitaire::render_suit_stacks()
             tex->solidColour({50,50,50,255});
             tex->render(suit_piles+i);
             tex->free();
-        } else suit_cards[i].top()->render(suit_piles+i);
+        } else render_card(suit_cards[i].top(), suit_piles+i);
     }
 }
 
@@ -193,33 +196,36 @@ void Solitaire::getInput(const SDL_Event& e)
 /* cycles the draw pile by the draw amount */
 void Solitaire::cycle_draw_pile()
 {
-    if (nhidden == 0)
+    if (!draw_pile.empty())
     {
-        nshown = 0;
-        nhidden = draw_pile.size();
-        for (int i=0; i<nhidden; i++) {
-            draw_pile.front()->flip();
-            draw_pile.advance();
+        if (nhidden == 0)
+        {
+            nshown = 0;
+            nhidden = draw_pile.size();
+            for (int i=0; i<nhidden; i++) {
+                draw_pile.front()->flip();
+                draw_pile.advance();
+            }
+            draw_pile.advance(SHOW_AMT-1);
         }
-        draw_pile.advance(SHOW_AMT-1);
-    }
-    else
-    {
-        int offset = (nshown<SHOW_AMT)? std::max(0,nshown-1) : SHOW_AMT-1;
-        auto start = draw_pile.at(offset);
-        int transfer = std::min(DRAW_AMT, nhidden);
-        for (int i=0; i<transfer; i++) {
-            start->elem->flip();
-            start = start->next;
-        }
-        int advance = 0;
-        if (nshown < SHOW_AMT) {
-            if (nshown==0) advance = 1;
-            else if ((SHOW_AMT-nshown)<DRAW_AMT) advance = (nshown+transfer) - SHOW_AMT;
-        } else advance = transfer;
-        draw_pile.advance(advance);
+        else
+        {
+            int offset = (nshown<SHOW_AMT)? std::max(0,nshown-1) : SHOW_AMT-1;
+            auto start = draw_pile.at(offset);
+            int transfer = std::min(DRAW_AMT, nhidden);
+            for (int i=0; i<transfer; i++) {
+                start->elem->flip();
+                start = start->next;
+            }
+            int advance = 0;
+            if (nshown < SHOW_AMT) {
+                if (nshown==0) advance = 1;
+                else if ((SHOW_AMT-nshown)<DRAW_AMT) advance = (nshown+transfer) - SHOW_AMT;
+            } else advance = transfer;
+            draw_pile.advance(advance);
 
-        nshown += transfer; nhidden -= transfer;
+            nshown += transfer; nhidden -= transfer;
+        }
     }
 }
 
@@ -264,13 +270,16 @@ void Solitaire::leftClick(const int& x, const int& y)
 /* picks up a card from the draw pile */
 void Solitaire::pick_from_draw_pile(const int& samt)
 {
-    CNode<std::shared_ptr<Card>> *node;
-    if (samt == 1) node = draw_pile.at(draw_pile.size()-2);
-    else if (samt == 2) node = draw_pile.back_ptr();
-    else node = draw_pile.at(samt-3);
-    held_card = node->next->elem;
-    held_origin.origin = STACK_Draw;
-    held_origin.node = node;
+    if (!draw_pile.empty())
+    {
+        CNode<std::shared_ptr<Card>> *node;
+        if (samt == 1) node = draw_pile.at(draw_pile.size()-2);
+        else if (samt == 2) node = draw_pile.back_ptr();
+        else node = draw_pile.at(samt-3);
+        held_card = node->next->elem;
+        held_origin.origin = STACK_Draw;
+        held_origin.node = node;
+    }
 }
 
 /* attempts to pick up a card from a game stack, returns true if successful */
@@ -278,21 +287,24 @@ bool Solitaire::pick_from_game_stack(const int& x, const int& y)
 {
     for (int i=0; i<NUM_PLAYSTACKS; i++)
     {
-        int num = in_game_stack(x, y, game_card_piles[i]); 
-        // pick up the top card of the selected stack
-        if (num != -1)
+        auto dq = game_cards[i];
+        if (!dq.empty())
         {
-            auto dq = game_cards[i];
-            auto card = dq.at(num);
-            if (card->isRevealed()) {
-                held_card = card;
+            int num = in_game_stack(x, y, game_card_piles[i]); 
+            // pick up the top card of the selected stack
+            if (num != -1)
+            {
+                auto card = dq.at(num);
+                if (card->isRevealed()) {
+                    held_card = card;
 
-                held_origin.origin = STACK_Game;
-                held_origin.stackIdx = i;
-                for (num--;num>=0;num--) {
-                    held_origin.held_dq.emplace_front(dq.at(num));
+                    held_origin.origin = STACK_Game;
+                    held_origin.stackIdx = i;
+                    for (num--;num>=0;num--) {
+                        held_origin.held_dq.emplace_front(dq.at(num));
+                    }
+                    return true;
                 }
-                return true;
             }
         }
     }

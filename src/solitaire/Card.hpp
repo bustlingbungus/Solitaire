@@ -71,15 +71,7 @@ class Card
         Suit suit;
         Rank rank;
 
-        std::unique_ptr<LTexture> bg0, bg1;
+        std::shared_ptr<LTexture> back, face;
 };
-
-/* Creates a texture for a card based on its suit and rank.
- * Actually creates a texture for number cards, but loads from file for face cards */
-class CardCreator
-{
-
-};
-
 
 #endif

@@ -21,7 +21,6 @@ enum TextOrientation
 // Texture wrapper class
 class LTexture
 {
-  friend class CardCreator;
 
 public:
   // Initializes variables
@@ -60,10 +59,17 @@ public:
   // Renders texture at given point
   void render(int x, int y, SDL_Rect *dest = NULL, SDL_Rect *clip = NULL, double angle = 0.0,
               SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
-  void render(SDL_Rect *dest = NULL, SDL_Rect *clip = NULL, double angle = 0.0,
+  // Renders a texture into a provided rect
+  void render(SDL_Rect *dest, SDL_Rect *clip = NULL, double angle = 0.0,
               SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
-
+  // renders to another texture
+  void render_toTexture(LTexture *target, int x, int y, SDL_Rect *dest = NULL, SDL_Rect *clip = NULL, double angle = 0.0,
+              SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
+  // renders to another texture
+  void render_toTexture(LTexture *target, SDL_Rect *dest, SDL_Rect *clip = NULL, double angle = 0.0,
+              SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
+              
   // Gets image dimensions
   int getWidth();
   int getHeight();

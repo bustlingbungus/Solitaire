@@ -17,6 +17,7 @@
 // solitaire
 #include "solitaire/Card.hpp"
 #include "solitaire/Solitaire.hpp"
+#include "solitaire/CardCreator.hpp"
 
 int main()
 {
@@ -24,6 +25,7 @@ int main()
     int WIDTH = 1280, HEIGHT = 720;
     auto window = std::make_shared<LWindow>(WIDTH, HEIGHT, "Solitaire");
 
+    cardCreator.Init(window);
     // create solitaire game
     Solitaire solitaire(window);
 

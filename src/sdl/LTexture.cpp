@@ -194,6 +194,39 @@ void LTexture::render(SDL_Rect *dest, SDL_Rect *clip, double angle,
                    center, flip);
 }
 
+// renders to another texture
+void LTexture::render_toTexture(LTexture *target, int x, int y, SDL_Rect *dest, SDL_Rect *clip, double angle,
+            SDL_Point *center, SDL_RendererFlip flip)
+{
+  // set the renderer to target the other's mtexture
+  if (SDL_SetRenderTarget(gHolder->gRenderer, target->mTexture) < 0) {
+    printf("Failed to render to texture! SDL Error: %s\n", SDL_GetError());
+    return;
+  }
+  render(x, y, dest, clip, angle, center, flip);
+
+  // reset the render target
+  if (SDL_SetRenderTarget(gHolder->gRenderer, NULL) < 0) {
+    printf("Failed to reset render target! SDL Error: %s\n", SDL_GetError());
+  }
+}
+// renders to another texture
+void LTexture::render_toTexture(LTexture *target, SDL_Rect *dest, SDL_Rect *clip, double angle,
+            SDL_Point *center, SDL_RendererFlip flip)
+{
+  // set the renderer to target the other's mtexture
+  if (SDL_SetRenderTarget(gHolder->gRenderer, target->mTexture) < 0) {
+    printf("Failed to render to texture! SDL Error: %s\n", SDL_GetError());
+    return;
+  }
+  render(dest, clip, angle, center, flip);
+
+  // reset the render target
+  if (SDL_SetRenderTarget(gHolder->gRenderer, NULL) < 0) {
+    printf("Failed to reset render target! SDL Error: %s\n", SDL_GetError());
+  }
+}
+
 int LTexture::getWidth() { return mWidth; }
 
 int LTexture::getHeight() { return mHeight; }
