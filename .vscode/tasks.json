@@ -1,0 +1,61 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "create build files",
+			"command": "cmake",
+			"args": [
+				".."
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "write build files to build"
+		},
+		{
+			"type": "shell",
+			"label": "build project",
+			"command": "cmake",
+			"args": [
+				"--build",
+				".",
+				"--verbose"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "build the project"
+		},
+		{
+			"type": "shell",
+			"label": "Open project",
+			"command": "./project.exe",
+			"options": {
+				"cwd": "${workspaceFolder}/build/bin"
+			},
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "launch the application"
+		},
+		{
+			"label": "build and open project",
+			"type": "shell",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"create build files",
+				"build project",
+				"Open project"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": []
+		}
+	]
+}

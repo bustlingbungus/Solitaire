@@ -1,0 +1,7 @@
+# ignore all build files
+build/*
+
+# ignore .vscode files (excluding tasks.json)
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/settings.json
