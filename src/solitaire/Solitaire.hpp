@@ -36,6 +36,17 @@ class Solitaire
         /* Reads user input */
         void getInput(const SDL_Event& e);
 
+        /* clears all card piles */
+        void clear();
+        
+        /* randomly shuffles the deck into draw_pile */
+        void shuffle();
+        /* takes cards from draw_pile and places them on the board */
+        void deal();
+
+        /* returns true if all cards are in the suit piles */
+        bool victory() const;
+
     private:
 
         /* ==========  CONSTANTS  ========== */
@@ -64,6 +75,9 @@ class Solitaire
                  shown_draw_pile = {5, CARD_HEIGHT+50, CARD_WIDTH, CARD_HEIGHT};
         // the size of the draw pile that is shown, and hidden, respectively
         int nshown = 0, nhidden;
+
+        // the number of hidden cards on the game board
+        int hidden_in_game = 0;
         
         // the positions of the top card of each game pile
         SDL_Rect *game_card_piles;
@@ -74,6 +88,9 @@ class Solitaire
         std::shared_ptr<Card> held_card = nullptr;
         // information about where the held card came from
         ReturnType held_origin;
+
+        // whether or not the game was been won
+        bool has_won = false;
 
 
         /* ==========  SDL VARIABLES  ========== */
@@ -100,10 +117,9 @@ class Solitaire
         // returns true if the given card can be placed on the given suit stack
         bool canBePlaced_suit(const std::shared_ptr<Card>& c, const std::stack<std::shared_ptr<Card>>& stk, const Suit& suit);
 
-        // randomly shuffles the deck into draw_pile
-        void shuffle();
-        // takes cards from draw_pile and places them on the board
-        void deal();
+
+        // transition into win state
+        void win_game();
 
         /* ==========  INPUT  ========== */
 

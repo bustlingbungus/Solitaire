@@ -28,6 +28,8 @@ int main()
     cardCreator.Init(window);
     // create solitaire game
     Solitaire solitaire(window);
+    solitaire.shuffle();
+    solitaire.deal();
 
     SDL_Event e;
     bool quit = false;

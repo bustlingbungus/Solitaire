@@ -43,7 +43,7 @@ class Card
 {
     public:
         /* Assigns variables */
-        Card(Suit suit, Rank rank, std::shared_ptr<LWindow> window);
+        Card(Suit suit, Rank rank);
         /* Deallocates resources */
         ~Card();
 
@@ -61,9 +61,6 @@ class Card
 
     private:
 
-        /* The window the card will be rendered to */
-        std::shared_ptr<LWindow> window;
-
         /* Whether or no the card face can be seen */
         bool is_revealed = false;
 
@@ -71,6 +68,7 @@ class Card
         Suit suit;
         Rank rank;
 
+        /* textures for the card's back and face sides */
         std::shared_ptr<LTexture> back, face;
 };
 

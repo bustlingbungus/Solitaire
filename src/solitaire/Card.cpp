@@ -2,8 +2,8 @@
 #include "CardCreator.hpp"
 
 /* Assigns variables */
-Card::Card(Suit suit, Rank rank, std::shared_ptr<LWindow> window)
-: suit(suit), rank(rank), window(window)
+Card::Card(Suit suit, Rank rank)
+: suit(suit), rank(rank)
 {
     back = cardCreator.backFace();
     face = cardCreator.front(suit, rank);

@@ -4,10 +4,8 @@
 Solitaire::Solitaire(std::shared_ptr<LWindow> window)
 : window(window)
 {
-    shuffle();
     game_cards = new std::deque<std::shared_ptr<Card>>[NUM_PLAYSTACKS];
     game_card_piles = new SDL_Rect[NUM_PLAYSTACKS];
-    deal();
 
     SDL_Rect rect = {(10*CARD_WIDTH)+175,5,CARD_WIDTH,CARD_HEIGHT};
     for (int i=0; i<4; i++) {
@@ -19,112 +17,39 @@ Solitaire::Solitaire(std::shared_ptr<LWindow> window)
 /* Deallocates resources */
 Solitaire::~Solitaire() 
 {
+    clear();
+}
+
+/* returns true if all cards are in the suit piles */
+bool Solitaire::victory() const { return has_won; }
+
+/* clears all card piles */
+void Solitaire::clear()
+{
+    for (int i=0; i<NUM_PLAYSTACKS; i++) game_cards[i].clear();
     delete [] game_cards;
     delete [] game_card_piles;
-}
-
-void Solitaire::renderCards()
-{
-    render_draw_pile();
-    render_game_stacks();
-    render_suit_stacks();
-    render_held();
-}
-
-/* renders the given card if it is not held */
-void Solitaire::render_card(std::shared_ptr<Card> card, SDL_Rect *rect) {
-    if (card != held_card) card->render(rect);
-}
-
-/* renders the held card */
-void Solitaire::render_held()
-{
-    if (held_card != nullptr)
-    {
-        // get the coordinates of the mouse
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        // the rect to render the held card into
-        SDL_Rect hrect = {x-(CARD_WIDTH/2), y-(CARD_HEIGHT/2), CARD_WIDTH, CARD_HEIGHT};
-        held_card->render(&hrect, 15.0);
-        for (auto dq = held_origin.held_dq; !dq.empty(); dq.pop_back())
-        {
-            hrect.y += 50;
-            dq.back()->render(&hrect);
-        }
+    for (int i=0; i<4; i++) {
+        while (!suit_cards[i].empty()) suit_cards[i].pop();
     }
-}
-
-/* renders the top 3 shown cards in the draw pile, and the remaining hidden draw pile */
-void Solitaire::render_draw_pile()
-{
-    if (!draw_pile.empty()) 
-    {
-        SDL_Rect shown = shown_draw_pile;
-        int rshown = std::min(nshown, SHOW_AMT);
-        auto head = draw_pile.back_ptr();
-
-        for (int i=0; i<=rshown; i++)
-        {
-            auto card = draw_pile.back();
-            draw_pile.advance();
-            if (i<rshown) {
-                render_card(card, &shown);
-                shown.y += 50;
-            } else if (nhidden > 0) render_card(card, &hidden_draw_pile);
-        }
-        draw_pile.setCursor(head);
-    }
-}
-
-/* renders all of the suit stacks */
-void Solitaire::render_suit_stacks()
-{
-    for (int i=0; i<4; i++)
-    {
-        if (suit_cards[i].empty()) {
-            auto tex = std::make_unique<LTexture>(window);
-            tex->solidColour({50,50,50,255});
-            tex->render(suit_piles+i);
-            tex->free();
-        } else render_card(suit_cards[i].top(), suit_piles+i);
-    }
-}
-
-/* renders each of the game stacks */
-void Solitaire::render_game_stacks() {
-    for (int i=0; i<NUM_PLAYSTACKS; i++) {
-        int lim = -1;
-        if (held_card != nullptr && held_origin.origin == STACK_Game && held_origin.stackIdx == i) {
-            lim = game_cards[i].size() - held_origin.held_dq.size();
-        }
-        render_stack(game_card_piles[i], game_cards[i], lim);
-    }
-}
-
-/* renders a single game stack */
-void Solitaire::render_stack(SDL_Rect rect, std::deque<std::shared_ptr<Card>> dq, int limit)
-{
-    if (limit == -1) limit = dq.size();
-    rect.y -= 50 * (dq.size()-1);
-    for (int i=0; i<limit && !dq.empty(); i++)
-    {
-        auto card = dq.back();
-        render_card(card, &rect);
-        rect.y += 50;
-        dq.pop_back();
-    }
+    draw_pile.clear();
 }
 
 /* randomly shuffles the deck into draw_pile */
 void Solitaire::shuffle()
 {
+    has_won = true;
+    // empty the existing piles
+    clear();
+    game_cards = new std::deque<std::shared_ptr<Card>>[NUM_PLAYSTACKS];
+    game_card_piles = new SDL_Rect[NUM_PLAYSTACKS];
+
     // create a vector with all cards
     std::vector<std::shared_ptr<Card>> deck;
 
     for (int suit = 0; suit < SUIT_MAX; suit++) {
         for (int rank = 1; rank < RANK_MAX; rank++) {
-            auto card = std::make_shared<Card>((Suit)suit, (Rank)rank, window);
+            auto card = std::make_shared<Card>((Suit)suit, (Rank)rank);
             deck.push_back(card);
         }
     }
@@ -156,6 +81,7 @@ void Solitaire::deal()
 
         dq.front()->flip();
         game_cards[i] = dq;
+        hidden_in_game += amt-1;
         amt++;
     }
     nhidden = draw_pile.size();
@@ -174,7 +100,8 @@ void Solitaire::getInput(const SDL_Event& e)
             // if a vlid mouse button is pressed call the appropriate function
             switch (e.button.button)
             {
-                case SDL_BUTTON_LEFT: leftClick(x, y); break;
+                case SDL_BUTTON_LEFT: 
+                    if (!has_won) leftClick(x, y); break;
             }
             break;
         }
@@ -186,7 +113,8 @@ void Solitaire::getInput(const SDL_Event& e)
             // if a vlid mouse button is pressed call the appropriate function
             switch (e.button.button)
             {
-                case SDL_BUTTON_LEFT: releaseLeft(x, y); break;
+                case SDL_BUTTON_LEFT: 
+                    if (!has_won) releaseLeft(x, y); break;
             }
             break;
         }
@@ -398,6 +326,19 @@ bool Solitaire::canBePlaced_suit(const std::shared_ptr<Card>& c, const std::stac
     else return stk.top()->getRank() == c->getRank()-1;    
 }
 
+/* transition into win state */
+void Solitaire::win_game()
+{
+    has_won = true;
+    for (int i=0; i<NUM_PLAYSTACKS; i++) game_cards[i].clear();
+    for (int i=0; i<4; i++) {
+        auto card = std::make_shared<Card>((Suit)i, RANK_King);
+        card->flip();
+        suit_cards[i].push(card);
+    }
+    std::cout << "You Win!\n";
+}
+
 /* removes the held card from its stack of origin */
 void Solitaire::removeHeld(int n_carried)
 {
@@ -416,7 +357,10 @@ void Solitaire::removeHeld(int n_carried)
             for (int i=0; i<=n_carried; i++) dq.pop_front();
             if (!dq.empty()) {
                 auto card = dq.front();
-                if (!card->isRevealed()) card->flip();
+                if (!card->isRevealed()) {
+                    card->flip();
+                    hidden_in_game--;
+                }
             }
             game_cards[held_origin.stackIdx] = dq;
             game_card_piles[held_origin.stackIdx].y -= 50*++n_carried;
@@ -427,4 +371,5 @@ void Solitaire::removeHeld(int n_carried)
             suit_cards[held_origin.stackIdx].pop();
             break;
     }
+    if (hidden_in_game == 0 && draw_pile.empty()) win_game();
 }

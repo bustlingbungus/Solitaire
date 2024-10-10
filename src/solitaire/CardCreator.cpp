@@ -12,6 +12,10 @@ CardCreator::~CardCreator()
     backTex->free();
     heart->free(); spade->free(); 
     diamond->free(); club->free(); 
+
+    jclub->free(); jdiamond->free(); jheart->free(); jspade->free();
+    qclub->free(); qdiamond->free(); qheart->free(); qspade->free();
+    kclub->free(); kdiamond->free(); kheart->free(); kspade->free();
 }
 
 /* Initialises the window and loads textures */
