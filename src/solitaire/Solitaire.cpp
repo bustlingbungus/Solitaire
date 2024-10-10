@@ -6,6 +6,8 @@ Solitaire::Solitaire(std::shared_ptr<LWindow> window)
 {
     game_cards = new std::deque<std::shared_ptr<Card>>[NUM_PLAYSTACKS];
     game_card_piles = new SDL_Rect[NUM_PLAYSTACKS];
+    shuffle();
+    deal();
 
     SDL_Rect rect = {(10*CARD_WIDTH)+175,5,CARD_WIDTH,CARD_HEIGHT};
     for (int i=0; i<4; i++) {
@@ -38,7 +40,11 @@ void Solitaire::clear()
 /* randomly shuffles the deck into draw_pile */
 void Solitaire::shuffle()
 {
-    has_won = true;
+    // reset variables
+    has_won = false;
+    nshown = 0;
+    hidden_in_game = 0;
+
     // empty the existing piles
     clear();
     game_cards = new std::deque<std::shared_ptr<Card>>[NUM_PLAYSTACKS];
@@ -100,7 +106,7 @@ void Solitaire::getInput(const SDL_Event& e)
             // if a vlid mouse button is pressed call the appropriate function
             switch (e.button.button)
             {
-                case SDL_BUTTON_LEFT: 
+                case SDL_BUTTON_LEFT:
                     if (!has_won) leftClick(x, y); break;
             }
             break;
@@ -336,7 +342,6 @@ void Solitaire::win_game()
         card->flip();
         suit_cards[i].push(card);
     }
-    std::cout << "You Win!\n";
 }
 
 /* removes the held card from its stack of origin */

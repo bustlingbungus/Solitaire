@@ -19,6 +19,8 @@
 #include "solitaire/Solitaire.hpp"
 #include "solitaire/CardCreator.hpp"
 
+#include "Menu/Menu.hpp"
+
 int main()
 {
     // window dimensions
@@ -27,9 +29,7 @@ int main()
 
     cardCreator.Init(window);
     // create solitaire game
-    Solitaire solitaire(window);
-    solitaire.shuffle();
-    solitaire.deal();
+    Menu solitaire(window);
 
     SDL_Event e;
     bool quit = false;
@@ -41,7 +41,7 @@ int main()
         {
             if (e.type == SDL_QUIT) quit = true;
             window->handleEvent(e);
-            solitaire.getInput(e);
+            if (!quit) quit = solitaire.getInput(e);
         }
 
         // render when not minimised
@@ -52,7 +52,7 @@ int main()
             SDL_RenderClear(window->gRenderer);
 
             // render cards
-            solitaire.renderCards();
+            solitaire.render();
 
             // update the window
             SDL_RenderPresent(window->gRenderer);

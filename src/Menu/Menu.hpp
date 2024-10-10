@@ -26,6 +26,9 @@ class Menu
         /* Renders the game and any menu buttons */
         void render();
 
+        /* takes in user input. returns true for quit */
+        bool getInput(const SDL_Event& e);
+
     private:
 
         /* ==========  MENU BUTTON CLASS DEFINITION  ========== */
@@ -61,6 +64,14 @@ class Menu
 
         /* text to render */
         std::unique_ptr<LTexture> win = nullptr, menutxt = nullptr;
+
+        TTF_Font *font = nullptr;
+
+        /* Starts a new game of solitaire */
+        void new_game();
+        /* exits the game */
+        void exit();
+        bool quit = false;
 };
 
 #endif
