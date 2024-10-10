@@ -86,7 +86,7 @@ void Solitaire::render_suit_stacks()
     {
         if (suit_cards[i].empty()) {
             auto tex = std::make_unique<LTexture>(window);
-            tex->solidColour({50,50,50,255});
+            tex->solidColour({0,120,0,255});
             tex->render(suit_piles+i);
             tex->free();
         } else render_card(suit_cards[i].top(), suit_piles+i);

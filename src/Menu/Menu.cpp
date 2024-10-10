@@ -29,9 +29,9 @@ Menu::Menu(std::shared_ptr<LWindow> window)
 
     font = TTF_OpenFont("../../assets/Jacquard12-Regular.ttf", 128);
     win = std::make_unique<LTexture>(window);
-    win->loadFromRenderedText("VICTORY",{255,255,0,255}, font);
+    win->loadFromRenderedText("VICTORY",{220,170,0,255}, font);
     menutxt = std::make_unique<LTexture>(window);
-    menutxt->loadFromRenderedText("SOLITAIRE", {255,255,0,255}, font);
+    menutxt->loadFromRenderedText("SOLITAIRE", {220,170,0,255}, font);
 
     TTF_CloseFont(font);
     font = TTF_OpenFont("../../assets/Jacquard12-Regular.ttf", 48);

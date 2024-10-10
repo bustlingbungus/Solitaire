@@ -48,7 +48,7 @@ int main()
         if (!window->isMinimized())
         {
             // clear the window
-            SDL_SetRenderDrawColor(window->gRenderer, 0, 0, 0, 0xFF);
+            SDL_SetRenderDrawColor(window->gRenderer, 0, 80, 0, 0xFF);
             SDL_RenderClear(window->gRenderer);
 
             // render cards
