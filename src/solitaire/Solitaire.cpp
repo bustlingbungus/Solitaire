@@ -15,6 +15,10 @@ Solitaire::Solitaire(std::shared_ptr<LWindow> window)
 
     game_cards = new std::deque<std::shared_ptr<Card>>[NUM_PLAYSTACKS];
     game_card_piles = new SDL_Rect[NUM_PLAYSTACKS];
+    for (int i=0; i<NUM_PLAYSTACKS; i++) {
+        SDL_Rect rect = {(i*(CARD_WIDTH+25))+(2*CARD_WIDTH), 5, CARD_WIDTH, CARD_HEIGHT};
+        game_card_piles[i] = rect;
+    }
 
     SDL_Rect rect = {(10*CARD_WIDTH)+175,5,CARD_WIDTH,CARD_HEIGHT};
     for (int i=0; i<4; i++) {
@@ -293,8 +297,8 @@ bool Solitaire::release_on_game_stack(const int& x, const int& y)
             // check for valid placement
             if (canBePlaced_game(held_card, game_cards[i]))
             {
+                if (!game_cards[i].empty()) game_card_piles[i].y += 50;
                 game_cards[i].emplace_front(held_card);
-                game_card_piles[i].y += 50;
                 int n_carried = held_origin.held_dq.size();
                 while (!held_origin.held_dq.empty()) {
                     game_cards[i].emplace_front(held_origin.held_dq.back());
@@ -345,7 +349,10 @@ bool Solitaire::canBePlaced_suit(const std::shared_ptr<Card>& c, const std::stac
 void Solitaire::win_game()
 {
     has_won = true;
-    for (int i=0; i<NUM_PLAYSTACKS; i++) game_cards[i].clear();
+    for (int i=0; i<NUM_PLAYSTACKS; i++) {
+        game_card_piles[i].y -= 50 * (game_cards[i].size()-1);
+        game_cards[i].clear();
+    }
     for (int i=0; i<4; i++) {
         auto card = std::make_shared<Card>((Suit)i, RANK_King);
         card->flip();
@@ -368,6 +375,7 @@ void Solitaire::removeHeld(int n_carried)
         case STACK_Game:
         {
             auto dq = game_cards[held_origin.stackIdx];
+            game_card_piles[held_origin.stackIdx].y -= 50*std::min(n_carried+1, int(dq.size()-1));
             for (int i=0; i<=n_carried; i++) dq.pop_front();
             if (!dq.empty()) {
                 auto card = dq.front();
@@ -377,7 +385,6 @@ void Solitaire::removeHeld(int n_carried)
                 }
             }
             game_cards[held_origin.stackIdx] = dq;
-            game_card_piles[held_origin.stackIdx].y -= 50*++n_carried;
             break;
         }
 

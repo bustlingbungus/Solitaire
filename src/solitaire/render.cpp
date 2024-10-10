@@ -70,7 +70,7 @@ void Solitaire::render_game_stacks() {
 void Solitaire::render_stack(SDL_Rect rect, std::deque<std::shared_ptr<Card>> dq, int limit)
 {
     if (limit == -1) limit = dq.size();
-    rect.y -= 50 * (dq.size()-1);
+    rect.y -= 50 * std::max(0, int(dq.size()-1));
     playstk->render(rect.x-5, rect.y-5);
     for (int i=0; i<limit && !dq.empty(); i++)
     {

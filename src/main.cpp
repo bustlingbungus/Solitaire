@@ -58,6 +58,5 @@ int main()
             SDL_RenderPresent(window->gRenderer);
         }
     }
-
     return 0;
 }
