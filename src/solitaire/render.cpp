@@ -35,6 +35,7 @@ void Solitaire::render_held()
 /* renders the top 3 shown cards in the draw pile, and the remaining hidden draw pile */
 void Solitaire::render_draw_pile()
 {
+    drawstk->render(hidden_draw_pile.x-5, hidden_draw_pile.y-5);
     if (!draw_pile.empty()) 
     {
         SDL_Rect shown = shown_draw_pile;
@@ -70,6 +71,7 @@ void Solitaire::render_stack(SDL_Rect rect, std::deque<std::shared_ptr<Card>> dq
 {
     if (limit == -1) limit = dq.size();
     rect.y -= 50 * (dq.size()-1);
+    playstk->render(rect.x-5, rect.y-5);
     for (int i=0; i<limit && !dq.empty(); i++)
     {
         auto card = dq.back();
@@ -84,11 +86,16 @@ void Solitaire::render_suit_stacks()
 {
     for (int i=0; i<4; i++)
     {
-        if (suit_cards[i].empty()) {
-            auto tex = std::make_unique<LTexture>(window);
-            tex->solidColour({0,120,0,255});
-            tex->render(suit_piles+i);
-            tex->free();
-        } else render_card(suit_cards[i].top(), suit_piles+i);
+        SDL_Rect *rect = suit_piles + i;
+        suitplaceholders[i]->render(rect->x-5, rect->y-5);
+        auto stk = suit_cards[i];
+        if (!stk.empty()) {
+            auto card = stk.top();
+            render_card(card, rect);
+            if (card == held_card && stk.size()>1) {
+                stk.pop();
+                render_card(stk.top(), rect);
+            }
+        }
     }
 }

@@ -20,6 +20,7 @@
 // solitaire
 #include "Card.hpp"
 #include "StackTypes.hpp"
+#include "CardCreator.hpp"
 
 
 class Solitaire
@@ -54,9 +55,9 @@ class Solitaire
         // the dimensions of each card
         const int CARD_WIDTH = 100, CARD_HEIGHT = 150;
         // the amount of cards that get drawn when clicking the draw pile 
-        const int DRAW_AMT = 1;
+        const int DRAW_AMT = 3;
         // the amount of revealed cards shown in the draw pile
-        const int SHOW_AMT = 3;
+        const int SHOW_AMT = 4;
         // the number of stacks in the play area
         const int NUM_PLAYSTACKS = 7;
 
@@ -97,6 +98,10 @@ class Solitaire
 
         // The window the game gets rendered to
         std::shared_ptr<LWindow> window;
+
+        // textures for the bottoms of stacks
+        std::shared_ptr<LTexture> drawstk = nullptr, playstk = nullptr;
+        std::shared_ptr<LTexture> suitplaceholders[4];
 
 
         /* ==========  HELPER FUNCTIONS  ========== */

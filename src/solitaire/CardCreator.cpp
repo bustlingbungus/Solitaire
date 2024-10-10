@@ -12,10 +12,14 @@ CardCreator::~CardCreator()
     backTex->free();
     heart->free(); spade->free(); 
     diamond->free(); club->free(); 
+    pheart->free(); pspade->free(); 
+    pdiamond->free(); pclub->free(); 
 
     jclub->free(); jdiamond->free(); jheart->free(); jspade->free();
     qclub->free(); qdiamond->free(); qheart->free(); qspade->free();
     kclub->free(); kdiamond->free(); kheart->free(); kspade->free();
+
+    placeholder->free(); suitlessking->free(); mouseclick->free();
 }
 
 /* Initialises the window and loads textures */
@@ -34,9 +38,15 @@ std::shared_ptr<LTexture> CardCreator::backFace() const { return backTex; }
 std::shared_ptr<LTexture> CardCreator::front(const Suit& suit, const Rank& rank)
 {
     auto res = std::make_shared<LTexture>(window);
-    if (!res->solidColour({255,255,255,255}, 100, 150)) {
+    if (!res->solidColour({170,170,170,170}, 100, 150)) {
         std::cerr << "Failed to create solid colour!\n";
     }
+
+    auto clr = std::make_unique<LTexture>(window);
+    SDL_Rect r = {2, 2, 96, 146};
+    clr->solidColour({255,255,255,255});
+    clr->render_toTexture(res.get(), &r);
+    clr->free();
 
     if (rank < RANK_Jack)
     {
@@ -57,7 +67,72 @@ std::shared_ptr<LTexture> CardCreator::front(const Suit& suit, const Rank& rank)
     else
     {
         auto face = get_face(suit, rank);
-        face->render_toTexture(res.get(), 0, 0);
+        face->render_toTexture(res.get(), &r);
+    }
+
+    return res;
+}
+
+/* Creates an Icon for stack placeholders */
+std::shared_ptr<LTexture> CardCreator::makePlaceholder(const Suit& suit, const Rank& rank)
+{
+    auto res = std::make_shared<LTexture>(window);
+    res->solidColour({0,80,0,255}, 110, 160);
+
+    placeholder->render_toTexture(res.get(), 0, 0);
+
+    switch (rank)
+    {
+        case RANK_Ace:
+        {
+            std::shared_ptr<LTexture> suit_tex = get_suit(suit, true),
+                                      Atex = std::make_shared<LTexture>(window);
+            Atex->loadFromRenderedText("A", {0,120,0,255}, font);
+
+            SDL_Rect suitrect = {
+                (res->getWidth()-suit_tex->getWidth())/2, 
+                (res->getHeight()-suit_tex->getHeight())/2, 
+                suit_tex->getWidth(), suit_tex->getHeight()
+            };
+            suit_tex->render_toTexture(res.get(), &suitrect);
+            
+            SDL_Rect dest = {8, 0, 17, 34};
+            suitrect = {8+(dest.w-(suitrect.w/2))/2, dest.h-5, suitrect.w/2, suitrect.h/2};
+            Atex->render_toTexture(res.get(), &dest);
+            suit_tex->render_toTexture(res.get(), &suitrect);
+
+            dest.x = 102 - dest.w; dest.y = 160 - dest.h;
+            suitrect.x = dest.x+(dest.w-suitrect.w)/2; suitrect.y = dest.y-suitrect.h;
+            Atex->render_toTexture(res.get(), &dest, NULL, 180.0);
+            suit_tex->render_toTexture(res.get(), &suitrect, NULL, 0.0, NULL, SDL_FLIP_VERTICAL);
+
+            Atex->free(); suit_tex->free();
+            break;
+        }
+
+        case RANK_King:
+        {
+            auto KTex = std::make_shared<LTexture>(window);
+            KTex->loadFromRenderedText("K", {0,120,0,255}, font);
+
+            SDL_Rect dest = {8, 0, 17, 34};
+            KTex->render_toTexture(res.get(), &dest);
+            dest.x = 102 - dest.w; dest.y = 160 - dest.h;
+            KTex->render_toTexture(res.get(), &dest, NULL, 180.0);
+
+            dest = {17, 18, 75, 113};
+            suitlessking->render_toTexture(res.get(), &dest);
+
+            KTex->free();
+            break;
+        }
+
+        default:
+        {
+            int w = mouseclick->getWidth(), h = mouseclick->getHeight();
+            SDL_Rect rect = {(res->getWidth()-w)/2, (res->getHeight()-h)/2, w, h};
+            mouseclick->render_toTexture(res.get(), &rect);
+        }
     }
 
     return res;
@@ -79,6 +154,7 @@ void CardCreator::render_text_to_face(std::shared_ptr<LTexture> face, std::share
     suitRect.x = dest.x+(dest.w-suitRect.w)/2; suitRect.y = dest.y-suitRect.h;
     txt->render_toTexture(face.get(), &dest, NULL, 180.0);
     suitTex->render_toTexture(face.get(), &suitRect, NULL, 0.0, NULL, SDL_FLIP_VERTICAL);
+    txt->free();
 }
 
 /* returns the points where suit images have to be placed
@@ -136,16 +212,17 @@ std::vector<std::vector<int>> CardCreator::get_suit_points(const Rank& rank) con
 }
 
 /* returns the desired suit as an image */
-std::shared_ptr<LTexture> CardCreator::get_suit(const Suit& suit) const
+std::shared_ptr<LTexture> CardCreator::get_suit(const Suit& suit, const bool& is_placeholder) const
 {
+    std::shared_ptr<LTexture> res = nullptr;
     switch (suit)
     {
-        case SUIT_Hearts: return heart;
-        case SUIT_Clubs: return club;
-        case SUIT_Spades: return spade;
-        case SUIT_Diamonds: return diamond;
+        case SUIT_Hearts: res = (is_placeholder)? pheart : heart; break;
+        case SUIT_Clubs: res = (is_placeholder)? pclub : club; break;
+        case SUIT_Spades: res = (is_placeholder)? pspade : spade; break;
+        case SUIT_Diamonds: res = (is_placeholder)? pdiamond : diamond; break;
     }
-    return nullptr;
+    return res;
 }
 
 /* returns the desired face texture */
@@ -225,6 +302,30 @@ void CardCreator::loadTextures(std::string assets_dir)
     if (!club->loadFromFile(filename)) {
         std::cerr << "Failed to load " << filename <<"!\n";
     }
+    
+    filename = assets_dir + "placeholders/heart.png";
+    pheart = std::make_shared<LTexture>(window);
+    if (!pheart->loadFromFile(filename)) {
+        std::cerr << "Failed to load " << filename <<"!\n";
+    }
+    
+    filename = assets_dir + "placeholders/spade.png";
+    pspade = std::make_shared<LTexture>(window);
+    if (!pspade->loadFromFile(filename)) {
+        std::cerr << "Failed to load " << filename <<"!\n";
+    }
+    
+    filename = assets_dir + "placeholders/diamond.png";
+    pdiamond = std::make_shared<LTexture>(window);
+    if (!pdiamond->loadFromFile(filename)) {
+        std::cerr << "Failed to load " << filename <<"!\n";
+    }
+    
+    filename = assets_dir + "placeholders/club.png";
+    pclub = std::make_shared<LTexture>(window);
+    if (!pclub->loadFromFile(filename)) {
+        std::cerr << "Failed to load " << filename <<"!\n";
+    }
 
     filename = assets_dir + "faces/jclub.png";
     jclub = std::make_shared<LTexture>(window);
@@ -286,6 +387,22 @@ void CardCreator::loadTextures(std::string assets_dir)
     filename = assets_dir + "faces/kspade.png";
     kspade = std::make_shared<LTexture>(window);
     if (!kspade->loadFromFile(filename)) {
+        std::cerr << "Failed to load " << filename <<"!\n";
+    }
+
+    filename = assets_dir + "placeholders/placeholder.png";
+    placeholder = std::make_shared<LTexture>(window);
+    if (!placeholder->loadFromFile(filename)) {
+        std::cerr << "Failed to load " << filename <<"!\n";
+    }
+    filename = assets_dir + "placeholders/king.png";
+    suitlessking = std::make_shared<LTexture>(window);
+    if (!suitlessking->loadFromFile(filename)) {
+        std::cerr << "Failed to load " << filename <<"!\n";
+    }
+    filename = assets_dir + "placeholders/pointer.png";
+    mouseclick = std::make_shared<LTexture>(window);
+    if (!mouseclick->loadFromFile(filename)) {
         std::cerr << "Failed to load " << filename <<"!\n";
     }
 

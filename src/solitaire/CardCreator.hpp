@@ -32,6 +32,9 @@ class CardCreator
          * but loads from file for face cards. */
         std::shared_ptr<LTexture> front(const Suit& suit, const Rank& rank);
 
+        /* Creates an Icon for stack placeholders */
+        std::shared_ptr<LTexture> makePlaceholder(const Suit& suit, const Rank& rank);
+
     private:
 
 
@@ -44,9 +47,11 @@ class CardCreator
         /* The textures used for card creation */
         std::shared_ptr<LTexture> backTex = nullptr,
             heart = nullptr, spade = nullptr, diamond = nullptr, club = nullptr,
+            pheart = nullptr, pspade = nullptr, pdiamond = nullptr, pclub = nullptr,
             jclub = nullptr, jdiamond = nullptr, jheart = nullptr, jspade = nullptr,
             qclub = nullptr, qdiamond = nullptr, qheart = nullptr, qspade = nullptr,
-            kclub = nullptr, kdiamond = nullptr, kheart = nullptr, kspade = nullptr;
+            kclub = nullptr, kdiamond = nullptr, kheart = nullptr, kspade = nullptr,
+            placeholder = nullptr, suitlessking = nullptr, mouseclick = nullptr;
 
         /* The font used for number cards */
         TTF_Font *font = nullptr;
@@ -64,7 +69,7 @@ class CardCreator
         // whether the image should be flipped
         std::vector<std::vector<int>> get_suit_points(const Rank& rank) const;
         // returns the desired suit image
-        std::shared_ptr<LTexture> get_suit(const Suit& suit) const;
+        std::shared_ptr<LTexture> get_suit(const Suit& suit, const bool& is_placeholder = false) const;
 
         // returns the desired face texture
         std::shared_ptr<LTexture> get_face(const Suit& suit, const Rank& rank) const;

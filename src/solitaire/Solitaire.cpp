@@ -4,10 +4,17 @@
 Solitaire::Solitaire(std::shared_ptr<LWindow> window)
 : window(window)
 {
+    // create assets
+    drawstk = cardCreator.makePlaceholder(SUIT_MAX, RANK_MAX);
+    playstk = cardCreator.makePlaceholder(SUIT_MAX, RANK_King);
+    suitplaceholders[0] = cardCreator.makePlaceholder(SUIT_Hearts, RANK_Ace);
+    suitplaceholders[1] = cardCreator.makePlaceholder(SUIT_Clubs, RANK_Ace);
+    suitplaceholders[2] = cardCreator.makePlaceholder(SUIT_Diamonds, RANK_Ace);
+    suitplaceholders[3] = cardCreator.makePlaceholder(SUIT_Spades, RANK_Ace);
+
+
     game_cards = new std::deque<std::shared_ptr<Card>>[NUM_PLAYSTACKS];
     game_card_piles = new SDL_Rect[NUM_PLAYSTACKS];
-    shuffle();
-    deal();
 
     SDL_Rect rect = {(10*CARD_WIDTH)+175,5,CARD_WIDTH,CARD_HEIGHT};
     for (int i=0; i<4; i++) {
@@ -20,6 +27,8 @@ Solitaire::Solitaire(std::shared_ptr<LWindow> window)
 Solitaire::~Solitaire() 
 {
     clear();
+    drawstk->free(); playstk->free();
+    for (int i=0; i<4; i++) suitplaceholders[i]->free();
 }
 
 /* returns true if all cards are in the suit piles */
