@@ -48,6 +48,14 @@ class Menu
                 Menu *menu = nullptr;
         };
 
+        /* ==========  MENU BUTTON FUNCTIONS  ========== */
+
+        /* Starts a new game of solitaire */
+        void new_game();
+        /* exits the game */
+        void exit();
+        bool quit = false;
+
 
         /* ==========  MENU VARIABLES  ========== */
 
@@ -66,12 +74,6 @@ class Menu
         std::unique_ptr<LTexture> win = nullptr, menutxt = nullptr;
 
         TTF_Font *font = nullptr;
-
-        /* Starts a new game of solitaire */
-        void new_game();
-        /* exits the game */
-        void exit();
-        bool quit = false;
 };
 
 #endif

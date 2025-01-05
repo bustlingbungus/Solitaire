@@ -34,7 +34,7 @@
 		{
 			"type": "shell",
 			"label": "Open project",
-			"command": "./project.exe",
+			"command": "./Solitaire.exe",
 			"options": {
 				"cwd": "${workspaceFolder}/build/bin"
 			},

@@ -44,7 +44,7 @@ Menu::Menu(std::shared_ptr<LWindow> window)
     SDL_Rect rect = {
         (window->getWidth()-menutxt->getWidth())/2, 
         (window->getHeight()-menutxt->getHeight())/2 + 200, 
-        txt->getWidth()*1.25, txt->getHeight()*1.25
+        int(txt->getWidth()*1.25), int(txt->getHeight()*1.25)
     };
     auto tex = std::make_shared<LTexture>(window);
     tex->solidColour({255,255,255,255}, rect.w, rect.h);

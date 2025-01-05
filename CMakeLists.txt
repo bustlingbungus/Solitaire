@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 # set(CMAKE_PREFIX_PATH "C:/msys64/Libraries")
 
 # change to the project's name
-project(project)
+project(Solitaire)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(SDL2 REQUIRED CONFIG)
